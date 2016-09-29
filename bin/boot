@@ -1,0 +1,8 @@
+#! /bin/bash
+
+if [ "$NODE_ENV" = "production" ]
+then
+  node server.js
+else
+  ./node_modules/.bin/nodemon --debug server.js
+fi
