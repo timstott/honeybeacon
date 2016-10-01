@@ -8,6 +8,7 @@
   },
   "main": "server.js",
   "scripts": {
+    "dev": "nodemon --debug server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
