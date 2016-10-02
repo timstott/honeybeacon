@@ -8,9 +8,10 @@
   },
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon --exec babel-node server.js",
+    "dev": "nodemon --ignore test --exec babel-node server.js",
     "start": "babel-node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --compilers js:babel-register",
+    "testw": "mocha --watch --compilers js:babel-register"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +21,10 @@
     "express": "^4.14.0"
   },
   "devDependencies": {
+    "babel-register": "^6.16.3",
+    "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
+    "mocha": "^3.1.0",
     "nodemon": "^1.10.2"
   },
   "engines": {
