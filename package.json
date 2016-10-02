@@ -11,7 +11,7 @@
     "dev": "nodemon --ignore test --exec babel-node server.js",
     "start": "babel-node server.js",
     "test": "mocha --compilers js:babel-register",
-    "testw": "mocha --watch --compilers js:babel-register"
+    "testw": "mocha --reporter nyan --watch --compilers js:babel-register"
   },
   "author": "",
   "license": "ISC",
