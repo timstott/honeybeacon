@@ -1,11 +1,12 @@
-var express = require('express');
-var app = express();
+'use strict';
+import express from 'express';
+const app = express();
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-var serverPort = process.env.PORT || 3000
-app.listen(serverPort, function () {
-  console.log('Honeybeacon listening on port ' + serverPort);
+const serverPort = process.env.PORT || 3000
+app.listen(serverPort, () => {
+  console.log(`Honeybeacon listening on port ${serverPort}`);
 });
