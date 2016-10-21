@@ -1,5 +1,6 @@
 'use strict';
 
+import { makeGetRequest } from './lib/make-https.js';
 import express from 'express';
 import https from 'https';
 const app = express();
@@ -18,33 +19,14 @@ app.get('/', (req, res) => {
 
 app.get('/ping', (_, res) => { res.send("pong\n"); });
 
-
 const fetchGist = (gistId) => {
-  return new Promise((_, reject) => {
+  return new Promise((resolve, reject) => {
     const gistId  = process.env.CONFIG_GIST_ID;
     const gistUrl = `https://api.github.com/gists/${gistId}`;
 
-    makeGetRequest(gistUrl).catch(err => {
-      reject(new Error('Failed to fetch gist'));
-    });
-  });
-};
-
-const makeGetRequest = (url) => {
-  return new Promise((resolve, reject) => {
-    const request = https.get(url, (response) => {
-      const {statusCode} = response;
-
-      if (statusCode != 200) {
-        const errorMessage = `Failed GET request ${url}. Response status code ${statusCode}`;
-        console.log(errorMessage);
-        reject(new Error(errorMessage));
-      }
-      const body = [];
-      response.on('data', (chunk) => body.push(chunk));
-      response.on('end', () => resolve(body.join('')));
-    });
-    request.on('error', (err) => reject(err));
+    makeGetRequest(gistUrl)
+      .catch(err => { reject(new Error('Failed to fetch gist')); })
+      .then(data => resolve(data));
   });
 };
 
