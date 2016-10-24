@@ -1,0 +1,11 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker build --rm=false -t honeybeacon-server .
+
+test:
+  override:
+    - docker run honeybeacon-server bin/test

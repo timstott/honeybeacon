@@ -1,0 +1,5 @@
+web:
+  build: .
+  volumes:
+    - .:/home/app/src
+    - /home/app/src/node_modules
