@@ -24,7 +24,8 @@ describe('/ping', () => {
 });
 
 describe('/devices', () => {
-  const githubAPI = nock('https://api.github.com');
+  const githubHeaders = { 'User-Agent': 'honeybeacon' }
+  const githubAPI = nock('https://api.github.com', { reqheaders: githubHeaders });
   const subject = chai.request(app);
 
   afterEach(() => nock.cleanAll());
