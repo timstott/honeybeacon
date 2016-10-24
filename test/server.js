@@ -24,8 +24,9 @@ describe('/ping', () => {
 });
 
 describe('/devices', () => {
-  const api = nock('https://api.github.com');
-  const request = chai.request(app).get('/devices');
+  const githubAPI = nock('https://api.github.com');
+  const hbAPI = nock('https://app.honeybadger.io/v2');
+  const subject = chai.request(app);
 
   afterEach(() => nock.cleanAll());
 
@@ -33,18 +34,107 @@ describe('/devices', () => {
     beforeEach(() => {
       process.env.CONFIG_GIST_ID = 'unknown-gist-id';
 
-      api.get('/gists/unknown-gist-id').reply(404, {
+      githubAPI.get('/gists/unknown-gist-id').reply(404, {
         "message": "Not Found",
         "documentation_url": "https://developer.github.com/v3"
       });
     });
 
     it('responds as no faults', (done) => {
-        request.end((err, res) => {
+      subject.get('/devices').end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.text).to.equal("Failed to fetch gist\n0\n");
           done();
         });
+    });
+  });
+
+  context('when faults are found in one project', () => {
+    const githubGistFileContext = {
+      projects: [
+        {
+          projectId: 12345,
+          query: "tag:MKRT environment:production",
+        }
+      ]
+    };
+    const githubGist = {
+      files: {
+        'config.json': {
+          content: JSON.stringify(githubGistFileContext),
+          language: 'JSON',
+        }
+      }
+    };
+
+    beforeEach(() => {
+      process.env.CONFIG_GIST_ID = 'a21c4ea4t40f15736c52';
+      process.env.HB_TOKEN = 'XYZ';
+
+      githubAPI.get('/gists/a21c4ea4t40f15736c52').reply(200, githubGist);
+      hbAPI.get('/projects/12345/faults')
+        .query({auth_token: 'XYZ', q: 'tag:MKRT environment:production'})
+        .reply(200, { results: [{}]} );
+    });
+
+    it('responds with faults detected', (done) => {
+      subject.get('/devices').end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.text).to.equal("Faults found\n1\n");
+        done();
+      });
+    });
+  });
+
+
+  context('when faults are found in some projects', () => {
+    const githubGistFileContext = {
+      projects: [
+        {
+          projectId: 12345,
+          query: "tag:MKRT environment:production",
+        },
+        {
+          projectId: 67890,
+          query: "",
+        },
+        {
+          projectId: 54321,
+          query: "environment:development",
+        },
+      ]
+    };
+    const githubGist = {
+      files: {
+        'config.json': {
+          content: JSON.stringify(githubGistFileContext),
+          language: 'JSON',
+        }
+      }
+    };
+
+    beforeEach(() => {
+      process.env.CONFIG_GIST_ID = 'a21c4ea4t40f15736c52';
+      process.env.HB_TOKEN = 'XYZ';
+
+      githubAPI.get('/gists/a21c4ea4t40f15736c52').reply(200, githubGist);
+      hbAPI.get('/projects/12345/faults')
+        .query({auth_token: 'XYZ', q: 'tag:MKRT environment:production'})
+        .reply(200, { results: []} );
+      hbAPI.get('/projects/67890/faults')
+        .query({auth_token: 'XYZ', q: ''})
+        .reply(200, { results: [{}]} );
+      hbAPI.get('/projects/54321/faults')
+        .query({auth_token: 'XYZ', q: 'environment:development'})
+        .reply(200, { results: []} );
+    });
+
+    it('responds with faults detected', (done) => {
+      subject.get('/devices').end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.text).to.equal("Faults found\n1\n");
+        done();
+      });
     });
   });
 });
