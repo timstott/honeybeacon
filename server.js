@@ -35,8 +35,9 @@ app.get('/devices', (req, res) => {
 
       if (faultsFound) {
         res.send("Faults found\n1\n");
+      } else {
+        res.send("No faults found\n0\n");
       }
-      res.send("No faults found\n0\n");
     });
   }).catch(err => {
     res.send(`${err.message}\n${noFaultsFoundCode}\n`);
