@@ -23,7 +23,7 @@ describe('/ping', () => {
   });
 });
 
-describe('/devices', () => {
+describe('/faults', () => {
   const githubHeaders = { 'User-Agent': 'honeybeacon' }
   const githubAPI = nock('https://api.github.com', { reqheaders: githubHeaders });
   const subject = chai.request(app);
@@ -41,7 +41,7 @@ describe('/devices', () => {
     });
 
     it('responds as no faults', (done) => {
-      subject.get('/devices').end((err, res) => {
+      subject.get('/faults').end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.text).to.equal("Failed to fetch gist\n0\n");
           done();
@@ -103,7 +103,7 @@ describe('/devices', () => {
       });
 
       it('responds with faults found', (done) => {
-        subject.get('/devices').end((err, res) => {
+        subject.get('/faults').end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.text).to.equal("Faults found\n1\n");
           done();
@@ -111,7 +111,7 @@ describe('/devices', () => {
       });
 
       it('makes all external calls', (done) => {
-        subject.get('/devices').end(() => {
+        subject.get('/faults').end(() => {
           expect(githubAPI.isDone()).to.be.true;
           expect(hbAPI.isDone()).to.be.true;
           done();
@@ -130,7 +130,7 @@ describe('/devices', () => {
       });
 
       it('responds with no faults found', (done) => {
-        subject.get('/devices').end((err, res) => {
+        subject.get('/faults').end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.text).to.equal("No faults found\n0\n");
           done();
@@ -138,7 +138,7 @@ describe('/devices', () => {
       });
 
       it('makes all external calls', (done) => {
-        subject.get('/devices').end(() => {
+        subject.get('/faults').end(() => {
           expect(githubAPI.isDone()).to.be.true;
           expect(hbAPI.isDone()).to.be.true;
           done();

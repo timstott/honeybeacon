@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 
 app.get('/ping', (_, res) => { res.send("pong\n"); });
 
-app.get('/devices', (req, res) => {
+app.get('/faults', (req, res) => {
   const hbAuthToken = process.env.HB_TOKEN;
 
   github.fetchGist().then(github.parseGist).then((data) => {
