@@ -7,7 +7,9 @@ import nock from 'nock';
 
 describe('makeGetRequest', () => {
   const apiBaseUrl = 'https://hello.world';
-  const api = nock(apiBaseUrl).get('/');
+  const api = nock(apiBaseUrl).matchHeader('User-Agent', 'honeybeacon').get('/');
+
+  afterEach(() => nock.cleanAll());
 
   context('when response is 200 with JSON', () => {
     beforeEach(() => {
@@ -39,6 +41,16 @@ describe('makeGetRequest', () => {
     it('rejects with an error', () => {
       return expect(mh.makeGetRequest(apiBaseUrl)).to.eventually
         .be.rejectedWith(Error, `Failed GET request ${apiBaseUrl} Responded with status code 500`)
+    });
+  });
+
+  context('when optional headers are passed', () => {
+    beforeEach(() => {
+      api.matchHeader('Foo', 'Bar').reply(200, {});
+    });
+
+    it('makes the call with the optional headers', () => {
+      return expect(mh.makeGetRequest(apiBaseUrl, {'Foo': 'Bar'})).to.be.fullfilled;
     });
   });
 });
