@@ -3,3 +3,6 @@ web:
   volumes:
     - .:/home/app/src
     - /home/app/src/node_modules
+  ports:
+    - '3000:3000'
+  command: bin/boot
