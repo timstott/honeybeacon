@@ -1,7 +1,5 @@
 'use strict';
 
-process.env.NODE_ENV = 'test';
-
 import chai, {expect} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import * as github from '../../lib/github.js';

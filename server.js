@@ -4,6 +4,7 @@ import * as github from './lib/github.js'
 import * as hb from './lib/honeybadger.js'
 import express from 'express';
 import https from 'https';
+import logger from 'winston';
 const app = express();
 const serverPort = process.env.PORT || 3000;
 
@@ -46,7 +47,7 @@ app.get('/faults', (req, res) => {
 
 if (!module.parent) {
   app.listen(serverPort, () => {
-    console.log(`Honeybeacon listening on port ${serverPort}`);
+    logger.info(`Honeybeacon listening on port ${serverPort}`);
   });
 }
 

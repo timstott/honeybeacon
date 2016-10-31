@@ -1,8 +1,5 @@
 'use strict';
 
-process.env.NODE_ENV = 'test';
-process.env.PORT     = 3333;
-
 import chai, {expect} from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../server';

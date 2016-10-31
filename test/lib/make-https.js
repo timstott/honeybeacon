@@ -35,7 +35,7 @@ describe('makeGetRequest', () => {
 
   context("when response isn't 200", () => {
     beforeEach(() => {
-      api.reply(500);
+      api.reply(500, 'Internal Server Error');
     });
 
     it('rejects with an error', () => {
