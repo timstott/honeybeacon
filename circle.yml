@@ -9,3 +9,4 @@ dependencies:
 test:
   override:
     - docker run honeybeacon-server bin/test
+    - docker run honeybeacon-server bin/lint
