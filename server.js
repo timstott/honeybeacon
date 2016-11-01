@@ -1,28 +1,27 @@
-'use strict';
+"use strict";
 
-import * as github from './lib/github.js'
-import * as hb from './lib/honeybadger.js'
-import express from 'express';
-import https from 'https';
-import logger from 'winston';
+import * as github from "./lib/github.js";
+import * as hb from "./lib/honeybadger.js";
+import express from "express";
+import logger from "winston";
 const app = express();
 const serverPort = process.env.PORT || 3000;
 
 const noFaultsFoundCode = 0;
-const faultsFound       = 1;
+const faultsFoundCode   = 1;
 
 app.use((_, res, next) => {
-  res.set('Content-Type', 'text/plain')
+  res.set("Content-Type", "text/plain");
   next();
 });
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
+app.get("/", (req, res) => {
+  res.send("Hello World!");
 });
 
-app.get('/ping', (_, res) => { res.send("pong\n"); });
+app.get("/ping", (_, res) => { res.send("pong\n"); });
 
-app.get('/faults', (req, res) => {
+app.get("/faults", (req, res) => {
   const hbAuthToken = process.env.HB_TOKEN;
 
   github.fetchGist().then(github.parseGist).then((data) => {
@@ -35,9 +34,9 @@ app.get('/faults', (req, res) => {
       const faultsFound = data.includes(true);
 
       if (faultsFound) {
-        res.send("Faults found\n1\n");
+        res.send(`Faults found\n${faultsFoundCode}\n`);
       } else {
-        res.send("No faults found\n0\n");
+        res.send(`No faults found\n${noFaultsFoundCode}\n`);
       }
     });
   }).catch(err => {
