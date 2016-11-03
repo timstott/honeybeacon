@@ -1,3 +1,8 @@
 #! /bin/bash
 
-./node_modules/eslint/bin/eslint.js server.js
+# Usage
+# bin/lint
+# Accepts arguments
+# bin/lint --fix
+# bin/lint --help
+./node_modules/eslint/bin/eslint.js server.js lib/**/*.js $@
