@@ -5,4 +5,4 @@
 # Accepts arguments
 # bin/lint --fix
 # bin/lint --help
-./node_modules/eslint/bin/eslint.js server.js lib/**/*.js $@
+./node_modules/eslint/bin/eslint.js server.js lib/**/*.js test/**/*.js $@
