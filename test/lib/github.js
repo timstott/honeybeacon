@@ -1,10 +1,43 @@
 "use strict";
 
-import chai, {expect} from "chai";
-import chaiAsPromised from "chai-as-promised";
 import * as github from "../../lib/github.js";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
+import nock from "nock";
 
 chai.use(chaiAsPromised);
+
+describe("fetchGist", () => {
+  const api = nock("https://api.github.com")
+        .matchHeader("Authorization", "token ABC123")
+        .get("/gists/XXX");
+
+
+  beforeEach(() => {
+    process.env.CONFIG_GIST_ID = "XXX";
+    process.env.GITHUB_TOKEN   = "ABC123";
+  });
+
+  afterEach(() => nock.cleanAll());
+
+  context("when the gist is found on GitHub", () => {
+    beforeEach(() => api.reply(200, {a: true}));
+
+    it("resolves with the gist content", () => {
+      return expect(github.fetchGist()).to.eventually.deep.equal({a: true});
+    });
+  });
+
+
+  context("when the authorization token is invalid", () => {
+    beforeEach(() => api.reply(401));
+
+    it("reject with an error", () => {
+      return expect(github.fetchGist()).to.eventually
+        .be.rejectedWith(Error, "Failed to fetch gist");
+    });
+  });
+});
 
 describe("parseGist", () => {
   context("when the gist includes no JSON files", () => {
