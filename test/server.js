@@ -39,10 +39,11 @@ describe('/faults', () => {
 
     it('responds as no faults', (done) => {
       subject.get('/faults').end((err, res) => {
-          expect(res).to.have.status(200);
-          expect(res.text).to.equal("Failed to fetch gist\n0\n");
-          done();
-        });
+        expect(res).to.have.status(200);
+        expect(res).to.be.text;
+        expect(res.text).to.equal("Failed to fetch gist\n0\n");
+        done();
+      });
     });
   });
 
@@ -102,6 +103,7 @@ describe('/faults', () => {
       it('responds with faults found', (done) => {
         subject.get('/faults').end((err, res) => {
           expect(res).to.have.status(200);
+          expect(res).to.be.text;
           expect(res.text).to.equal("Faults found\n1\n");
           done();
         });
@@ -129,6 +131,7 @@ describe('/faults', () => {
       it('responds with no faults found', (done) => {
         subject.get('/faults').end((err, res) => {
           expect(res).to.have.status(200);
+          expect(res).to.be.text;
           expect(res.text).to.equal("No faults found\n0\n");
           done();
         });

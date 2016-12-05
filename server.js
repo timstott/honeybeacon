@@ -10,18 +10,13 @@ const serverPort = process.env.PORT || 3000;
 const noFaultsFoundCode = 0;
 const faultsFoundCode   = 1;
 
-app.use((_, res, next) => {
+app.get("/ping", (_, res) => {
   res.set("Content-Type", "text/plain");
-  next();
+  res.send("pong\n");
 });
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
-app.get("/ping", (_, res) => { res.send("pong\n"); });
 
 app.get("/faults", (req, res) => {
+  res.set("Content-Type", "text/plain");
   const hbAuthToken = process.env.HB_TOKEN;
 
   github.fetchGist().then(github.parseGist).then((data) => {
