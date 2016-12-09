@@ -33,9 +33,11 @@ app.get("/faults", (req, res) => {
       } else {
         res.send(`No faults found\n${noFaultsFoundCode}\n`);
       }
+    }).catch(() => {
+      res.status(500).send(`No faults found\n${noFaultsFoundCode}\n`);
     });
   }).catch(err => {
-    res.send(`${err.message}\n${noFaultsFoundCode}\n`);
+    res.status(500).send(`${err.message}\n${noFaultsFoundCode}\n`);
   });
 });
 

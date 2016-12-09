@@ -39,7 +39,7 @@ describe('/faults', () => {
 
     it('responds as no faults', (done) => {
       subject.get('/faults').end((err, res) => {
-        expect(res).to.have.status(200);
+        expect(res).to.have.status(500);
         expect(res).to.be.text;
         expect(res.text).to.equal("Failed to fetch gist\n0\n");
         done();
@@ -49,7 +49,9 @@ describe('/faults', () => {
 
   context('when the gist is found on GitHub', () => {
     const hbAPI = nock('https://app.honeybadger.io/v2');
-    const projectWithFaults = { projectId: 67890, query: "" };
+    const projectWithFaults = {
+      projectId: 67890, query: ""
+    };
     const projectWithNoFaults = {
       projectId: 12345,
       query: "tag:MKRT environment:production",
@@ -141,6 +143,29 @@ describe('/faults', () => {
         subject.get('/faults').end(() => {
           expect(githubAPI.isDone()).to.be.true;
           expect(hbAPI.isDone()).to.be.true;
+          done();
+        });
+      });
+    });
+
+    context('when the HoneyBadger rate limit is exceeded', (done) => {
+      beforeEach(() => {
+        ctxt.githubGistFileContext = {
+          projects: [
+            projectWithFaults,
+          ]
+        };
+
+        hbAPI.get('/projects/67890/faults')
+          .query({auth_token: "XYZ", q: ""})
+          .reply(403, { errors: "Rate limit exceeded" });
+      });
+
+      it('responds with no faults found', (done) => {
+        subject.get('/faults').end((err, res) => {
+          expect(res).to.have.status(500);
+          expect(res).to.be.text;
+          expect(res.text).to.equal("No faults found\n0\n");
           done();
         });
       });
