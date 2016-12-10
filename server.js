@@ -17,6 +17,12 @@ app.get("/ping", (_, res) => {
 
 app.get("/faults", (req, res) => {
   res.set("Content-Type", "text/plain");
+  const deviceId    = req.query.deviceId;
+
+  if (!deviceId) {
+    res.status(400).send(`Missing query param deviceId\n${noFaultsFoundCode}\n`);
+    return;
+  }
   const hbAuthToken = process.env.HB_TOKEN;
 
   github.fetchGist().then(github.parseGist).then((data) => {
