@@ -2,6 +2,7 @@
 
 import * as github from "./lib/github.js";
 import * as hb from "./lib/honeybadger.js";
+import * as store from "./lib/store.js";
 import express from "express";
 import logger from "winston";
 const app = express();
@@ -24,27 +25,37 @@ app.get("/faults", (req, res) => {
     return;
   }
   const hbAuthToken = process.env.HB_TOKEN;
+  let lastFaultReportedAt;
 
-  github.fetchGist().then(github.parseGist).then((data) => {
-    const projectsHaveFaults = data.projects.map((p) => {
-      const projectConfig = Object.assign({ authToken: hbAuthToken }, p);
-      return hb.projectHasFaults(projectConfig);
+  store.touchLastRequestedAtByDeviceId(deviceId);
+
+  store.findLastFaultReportedAtByDeviceId(deviceId)
+    .then((data) => {
+      lastFaultReportedAt = data || store.unixTimestamp();
+    })
+    .then(github.fetchGist)
+    .then(github.parseGist).then((data) => {
+      const projectsHaveFaults = data.projects.map((p) => {
+        const projectConfig = Object.assign(
+          { authToken: hbAuthToken, lastFaultReportedAt: lastFaultReportedAt }, p);
+        return hb.projectHasFaults(projectConfig);
+      });
+
+      Promise.all(projectsHaveFaults).then((data) => {
+        const faultsFound = data.includes(true);
+
+        if (faultsFound) {
+          store.touchLastFaultReportedAtByDeviceId(deviceId);
+          res.send(`Faults found\n${faultsFoundCode}\n`);
+        } else {
+          res.send(`No faults found\n${noFaultsFoundCode}\n`);
+        }
+      }).catch(() => {
+        res.status(500).send(`No faults found\n${noFaultsFoundCode}\n`);
+      });
+    }).catch(err => {
+      res.status(500).send(`${err.message}\n${noFaultsFoundCode}\n`);
     });
-
-    Promise.all(projectsHaveFaults).then((data) => {
-      const faultsFound = data.includes(true);
-
-      if (faultsFound) {
-        res.send(`Faults found\n${faultsFoundCode}\n`);
-      } else {
-        res.send(`No faults found\n${noFaultsFoundCode}\n`);
-      }
-    }).catch(() => {
-      res.status(500).send(`No faults found\n${noFaultsFoundCode}\n`);
-    });
-  }).catch(err => {
-    res.status(500).send(`${err.message}\n${noFaultsFoundCode}\n`);
-  });
 });
 
 if (!module.parent) {

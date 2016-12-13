@@ -1,11 +1,13 @@
 'use strict';
 
+import * as store from "../lib/store.js";
 import chai, {expect} from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../server';
-import nock from 'nock';
-const util = require('util')
+import nock from "nock";
 chai.use(chaiHttp);
+
+store.unixTimestamp = () => { return 123456789; };
 
 describe('/ping', () => {
   it('retuns pong', (done) => {
@@ -26,6 +28,7 @@ describe('/faults', () => {
   const subject = chai.request(app);
 
   afterEach(() => nock.cleanAll());
+  beforeEach(() => store.reset());
 
   context("when the device id is missing", () => {
     it("responds with invalid request", (done) => {
@@ -88,14 +91,14 @@ describe('/faults', () => {
         };
 
         process.env.CONFIG_GIST_ID = 'a21c4ea4t40f15736c52';
-        process.env.HB_TOKEN = 'XYZ';
+        process.env.HB_TOKEN = "XYZ";
 
         githubAPI.get('/gists/a21c4ea4t40f15736c52').reply(200, ctxt.githubGist);
         hbAPI.get('/projects/12345/faults')
-          .query({auth_token: 'XYZ', q: 'tag:MKRT environment:production'})
+          .query({auth_token: 'XYZ', occurred_after: 123456789, q: 'tag:MKRT environment:production'})
           .reply(200, { results: []} );
         hbAPI.get('/projects/54321/faults')
-          .query({auth_token: 'XYZ', q: 'environment:development'})
+          .query({auth_token: 'XYZ', occurred_after: 123456789, q: 'environment:development'})
           .reply(200, { results: []} );
       });
 
@@ -110,7 +113,7 @@ describe('/faults', () => {
           };
 
           hbAPI.get('/projects/67890/faults')
-            .query({auth_token: 'XYZ', q: ''})
+            .query({auth_token: 'XYZ', occurred_after: 123456789, q: ''})
             .reply(200, { results: [{}]} );
         });
 
@@ -160,16 +163,18 @@ describe('/faults', () => {
         });
       });
 
-      context('when the HoneyBadger rate limit is exceeded', (done) => {
+      context('when the HoneyBadger rate limit is exceeded', () => {
         beforeEach(() => {
           ctxt.githubGistFileContext = {
             projects: [
+              projectWithNoFaults,
+              otherProjectWithNoFaults,
               projectWithFaults,
             ]
           };
 
           hbAPI.get('/projects/67890/faults')
-            .query({auth_token: "XYZ", q: ""})
+            .query({auth_token: "XYZ", occurred_after: 123456789, q: ""})
             .reply(403, { errors: "Rate limit exceeded" });
         });
 
@@ -178,6 +183,14 @@ describe('/faults', () => {
             expect(res).to.have.status(500);
             expect(res).to.be.text;
             expect(res.text).to.equal("No faults found\n0\n");
+            done();
+          });
+        });
+
+        it('makes all external calls', (done) => {
+          subject.get('/faults').query({ deviceId: "abc123"}).end(() => {
+            expect(githubAPI.isDone()).to.be.true;
+            expect(hbAPI.isDone()).to.be.true;
             done();
           });
         });
