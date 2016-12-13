@@ -17,3 +17,13 @@ pong
 ```
 docker-compose run web npm run testw
 ```
+
+## Arduino Code
+
+Requirements:
+
+- Arduino Board
+- Arduino Ethernet Shield
+- Relay
+
+Before uploading the code to the Arduino change the `deviceUUID` in [honeybeacon_device.ino](./honeybeacon_device.ino)
