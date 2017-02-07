@@ -5,7 +5,11 @@ import * as hb from "./lib/honeybadger.js";
 import express from "express";
 import logger from "winston";
 const app = express();
-const serverPort = process.env.PORT || 3000;
+const SERVER_PORT = process.env.PORT || 3000;
+
+const LOG_LEVEL = process.env.LOG_LEVEL || (process.env.NODE_ENV === "production" && "info") || "debug";
+logger.level = LOG_LEVEL
+logger.info(`NODE_ENV ${process.env.NODE_ENV}`);
 
 const noFaultsFoundCode = 0;
 const faultsFoundCode   = 1;
@@ -48,8 +52,8 @@ app.get("/faults", (req, res) => {
 });
 
 if (!module.parent) {
-  app.listen(serverPort, () => {
-    logger.info(`Honeybeacon listening on port ${serverPort}`);
+  app.listen(SERVER_PORT, () => {
+    logger.info(`Honeybeacon listening on port ${SERVER_PORT}`);
   });
 }
 
