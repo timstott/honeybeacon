@@ -4,6 +4,7 @@ import chai, {expect} from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../server';
 import nock from 'nock';
+import uuid from 'node-uuid';
 const util = require('util')
 chai.use(chaiHttp);
 
@@ -18,6 +19,23 @@ describe('/ping', () => {
         done();
       });
   });
+});
+
+describe('POST /devices', () => {
+  const subject = chai.request(app);
+  context("when the params are valid", () => {
+    let id = uuid.v4();
+    it("saves the device", (done) => {
+      subject.post("/devices").send({
+        deviceId: id,
+      }).end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.text).to.include(id)
+        done();
+      });
+    });
+  });
+
 });
 
 describe('/faults', () => {

@@ -4,7 +4,9 @@ import * as github from "./lib/github.js";
 import * as hb from "./lib/honeybadger.js";
 import { env, logger }  from "./lib/config.js";
 import express from "express";
+import bodyParser from "body-parser";
 const app = express();
+app.use(bodyParser.json());
 
 
 const noFaultsFoundCode = 0;
@@ -13,6 +15,11 @@ const faultsFoundCode   = 1;
 app.get("/ping", (_, res) => {
   res.set("Content-Type", "text/plain");
   res.send("pong\n");
+});
+
+app.post("/devices", (req, res) => {
+  logger.info(req.body);
+  res.json(req.body);
 });
 
 app.get("/faults", (req, res) => {
