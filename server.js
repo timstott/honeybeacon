@@ -2,14 +2,10 @@
 
 import * as github from "./lib/github.js";
 import * as hb from "./lib/honeybadger.js";
+import { env, logger }  from "./lib/config.js";
 import express from "express";
-import logger from "winston";
 const app = express();
-const SERVER_PORT = process.env.PORT || 3000;
 
-const LOG_LEVEL = process.env.LOG_LEVEL || (process.env.NODE_ENV === "production" && "info") || "debug";
-logger.level = LOG_LEVEL
-logger.info(`NODE_ENV ${process.env.NODE_ENV}`);
 
 const noFaultsFoundCode = 0;
 const faultsFoundCode   = 1;
@@ -52,8 +48,8 @@ app.get("/faults", (req, res) => {
 });
 
 if (!module.parent) {
-  app.listen(SERVER_PORT, () => {
-    logger.info(`Honeybeacon listening on port ${SERVER_PORT}`);
+  app.listen(env.SERVER_PORT, () => {
+    logger.info(`Honeybeacon listening on port ${env.SERVER_PORT}`);
   });
 }
 

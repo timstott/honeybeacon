@@ -1,4 +1,4 @@
-# Honeybeacon Server
+# Honeybeacon Server [![CircleCI](https://circleci.com/gh/timstott/honeybeacon-server/tree/master.svg?style=svg)](https://circleci.com/gh/timstott/honeybeacon-server/tree/master)
 
 Serves an endpoint that indicates the presence of faults on HoneyBadger on a client basis.
 
