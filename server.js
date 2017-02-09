@@ -8,6 +8,36 @@ import bodyParser from "body-parser";
 const app = express();
 app.use(bodyParser.json());
 
+import { Sequelize } from "sequelize";
+
+const sequelize = new Sequelize(env.DATABASE_URL, {
+  logging: logger.debug
+});
+
+sequelize.authenticate()
+  .then(() => {
+    logger.info("Connection to database has been established");
+  })
+  .catch((err) => {
+    logger.error("Connection to database failed: " + err);
+  });
+
+const Devices = sequelize.define("devices", {
+  deviceId: {
+    type: Sequelize.UUID,
+    primaryKey: true,
+  },
+  configuration: Sequelize.JSONB,
+});
+
+Devices.sync()
+  .then(() => {
+    logger.info("Created table");
+
+  })
+  .catch((err) => {
+    logger.error("Connection to create table: " + err);
+  });
 
 const noFaultsFoundCode = 0;
 const faultsFoundCode   = 1;

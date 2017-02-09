@@ -2,11 +2,15 @@ machine:
   services:
     - docker
 
+database:
+  override:
+    - createdb honeybeacon_test
+
 dependencies:
   override:
     - docker build --rm=false -t honeybeacon-server .
 
 test:
   override:
-    - docker run honeybeacon-server bin/test
+    - docker run --net="host" honeybeacon-server bin/test
     - docker run honeybeacon-server bin/lint
