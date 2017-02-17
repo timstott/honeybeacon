@@ -3,16 +3,11 @@
 import * as github from "./lib/github.js";
 import * as hb from "./lib/honeybadger.js";
 import { env, logger }  from "./lib/config.js";
+import { sequelize, models } from "./lib/db.js";
 import express from "express";
 import bodyParser from "body-parser";
 const app = express();
 app.use(bodyParser.json());
-
-import { Sequelize } from "sequelize";
-
-const sequelize = new Sequelize(env.DATABASE_URL, {
-  logging: logger.debug
-});
 
 sequelize.authenticate()
   .then(() => {
@@ -22,18 +17,9 @@ sequelize.authenticate()
     logger.error("Connection to database failed: " + err);
   });
 
-const Devices = sequelize.define("devices", {
-  deviceId: {
-    type: Sequelize.UUID,
-    primaryKey: true,
-  },
-  configuration: Sequelize.JSONB,
-});
-
-Devices.sync()
+sequelize.sync()
   .then(() => {
     logger.info("Created table");
-
   })
   .catch((err) => {
     logger.error("Connection to create table: " + err);
@@ -48,8 +34,15 @@ app.get("/ping", (_, res) => {
 });
 
 app.post("/devices", (req, res) => {
-  logger.info(req.body);
-  res.json(req.body);
+  models.Devices
+    .create(req.body, { fields: ["id", "configuration"]})
+    .then((created) => {
+      const operation = created ? "created" : "updated";
+      res.status(201).json({ id: req.body.id, operation: operation });
+    })
+    .catch(() => {
+      res.status(422).json({});
+    });
 });
 
 app.get("/faults", (req, res) => {

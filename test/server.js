@@ -1,6 +1,7 @@
 'use strict';
 
-import chai, {expect} from 'chai';
+import { models } from '../lib/db.js';
+import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../server';
 import nock from 'nock';
@@ -23,19 +24,37 @@ describe('/ping', () => {
 
 describe('POST /devices', () => {
   const subject = chai.request(app);
-  context("when the params are valid", () => {
-    let id = uuid.v4();
-    it("saves the device", (done) => {
-      subject.post("/devices").send({
-        deviceId: id,
-      }).end((err, res) => {
-        expect(res).to.have.status(200);
-        expect(res.text).to.include(id)
-        done();
+
+  context("when the device is not persisted", () => {
+    let deviceId = uuid.v4();
+    it("creates the device", () => {
+      return subject.post("/devices")
+        .send({
+          id: deviceId,
+          configuration: {
+            example: true
+          },
+        })
+        .then((res) => {
+          expect(res).to.have.status(201);
+          expect(res).to.be.json;
+          expect(res.body).to.deep.equal({id: deviceId, operation: 'created'});
+          expect(models.Devices.findById(deviceId)).to.eventually.be.an('object');
       });
     });
   });
 
+  context("when the id param is missing", () => {
+    let deviceId = uuid.v4();
+    it("responds with an error", () => {
+      return subject.post("/devices")
+        .send({})
+        .catch((err) => {
+          expect(err).to.have.status(422);
+          expect(err.response.body).to.deep.equal({});
+        });
+    });
+  });
 });
 
 describe('/faults', () => {
